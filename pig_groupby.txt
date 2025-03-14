@@ -1,0 +1,16 @@
+-- Load weather data from HDFS
+weather_data = LOAD '/user/root/input/seattle-weather.csv' 
+                USING PigStorage(',') 
+                AS (date:chararray, precipitation:float, temp_max:float, temp_min:float, wind:float, weather:chararray);
+
+-- Group by weather type
+weather_group = GROUP weather_data BY weather;
+
+-- Count occurrences of each weather type
+weather_count = FOREACH weather_group GENERATE group AS weather, COUNT(weather_data) AS count;
+
+-- Store results in HDFS
+STORE weather_count INTO '/user/root/output/weather_count' USING PigStorage(',');
+
+-- Display output
+DUMP weather_count;
